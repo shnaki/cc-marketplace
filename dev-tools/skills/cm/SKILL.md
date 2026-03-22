@@ -1,6 +1,6 @@
 ---
 name: cm
-description: "Conventional Commits 形式で git commit を実行する。コード変更のコミット時に使用する。"
+description: "Conventional Commits 形式でコミットを実行する（git / jujutsu 自動判定）。コード変更のコミット時に使用する。"
 user-invocable: true
 argument-hint: "[コミットメッセージまたは変更の説明]"
 ---
@@ -11,7 +11,18 @@ argument-hint: "[コミットメッセージまたは変更の説明]"
 
 変更内容を Conventional Commits 形式でコミットする。
 
+## ステップ 0: VCS 判定
+
+```bash
+jj root 2>/dev/null && echo "VCS=jj" || echo "VCS=git"
+```
+
+- 成功 → 以降 **jj モード**で実行
+- 失敗 → 以降 **git モード**で実行
+
 ## ステップ 1: 変更内容の確認
+
+**git モード:**
 
 ```bash
 git status
@@ -19,7 +30,14 @@ git diff --staged
 git diff
 ```
 
-すべての変更（ステージ済み・未ステージ・未追跡）を把握する。
+**jj モード:**
+
+```bash
+jj status
+jj diff
+```
+
+すべての変更を把握する。
 
 ## ステップ 2: 変更の分類とグループ化
 
@@ -40,6 +58,8 @@ git diff
 
 ## ステップ 3: ステージング
 
+**git モード:**
+
 グループに含まれるファイルのみをステージする:
 
 ```bash
@@ -48,6 +68,15 @@ git add <file1> <file2> ...
 
 - `git add -A` や `git add .` は使わない。対象ファイルを明示的に指定する
 - 1ファイル内に複数テーマの変更がある場合は `git add -p` でハンク単位でステージする
+
+**jj モード:**
+
+jj では working copy の変更が自動追跡されるため、ステージングは不要。
+複数グループに分割する場合は `jj split` を使う:
+
+```bash
+jj split
+```
 
 ## ステップ 4: コミットメッセージの作成
 
@@ -87,12 +116,20 @@ git add <file1> <file2> ...
 
 - 変更の理由と背景を説明
 - 何を変更したかではなく、なぜ変更したかを記述
+- 文末の句点は付ける。
 
 ### footer（該当時のみ）
 
 - 破壊的変更: `type(scope)!: ...` 形式、または body に `BREAKING CHANGE:` を記載
-- ユーザー報告に基づく変更: `git commit --trailer "Reported-by:<name>"`
-- GitHub Issue 関連: `git commit --trailer "Github-Issue:#<number>"`
+
+**git モード:**
+
+- `git commit --trailer "Reported-by:<name>"`
+- `git commit --trailer "Github-Issue:#<number>"`
+
+**jj モード:**
+
+- trailer は `jj describe` でメッセージ末尾に手動追記する
 
 ### 禁止事項
 
@@ -102,6 +139,8 @@ git add <file1> <file2> ...
 ## ステップ 5: コミットの実行
 
 `$ARGUMENTS` が指定されている場合はそれをコミットメッセージの参考にする。
+
+**git モード:**
 
 ```bash
 git commit -m "<type>(<scope>): <subject>"
@@ -120,10 +159,37 @@ EOF
 )"
 ```
 
+**jj モード:**
+
+```bash
+jj commit -m "<type>(<scope>): <subject>"
+```
+
+body が必要な場合は HEREDOC を使用する:
+
+```bash
+jj commit -m "$(cat <<'EOF'
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+EOF
+)"
+```
+
 ## ステップ 6: 確認と次のグループ
+
+**git モード:**
 
 ```bash
 git log -1 --stat
+```
+
+**jj モード:**
+
+```bash
+jj log -r @- --stat
 ```
 
 - 残りのグループがある場合 → ステップ 3 に戻る
