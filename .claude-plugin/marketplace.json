@@ -1,0 +1,17 @@
+{
+  "name": "shnaki",
+  "metadata": {
+    "description": "shnaki's personal Claude Code marketplace",
+    "version": "0.0.1"
+  },
+  "owner": {
+    "name": "shnaki"
+  },
+  "plugins": [
+    {
+      "name": "dev-tools",
+      "source": "./dev-tools",
+      "description": "個人用スキル・MCP設定・Hooks"
+    }
+  ]
+}
