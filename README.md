@@ -17,6 +17,12 @@ shnaki の個人用 Claude Code マーケットプレイス。
 |--------|------|
 | `/init-python-project` | Python プロジェクトの CLAUDE.md を生成 |
 
+### ワークフロー
+
+| スキル | 説明 |
+|--------|------|
+| `/cm` | Conventional Commits 形式で git commit を実行 |
+
 ### メタスキル（マーケットプレイス管理）
 
 | スキル | 説明 |
